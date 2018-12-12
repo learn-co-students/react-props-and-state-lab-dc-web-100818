@@ -15,6 +15,41 @@ class App extends React.Component {
     }
   }
 
+  onChangeType = (event) => {
+    this.setState({
+      filters: {
+        type: event.target.value
+      }
+    })
+  }
+
+  onFindPetsClick = () => {
+    const filterType = this.state.filters.type
+    if (filterType === 'all') {
+    fetch('/api/pets')
+      .then(res => res.json())
+      .then(data => this.setState({pets: data}))
+    } else {
+      fetch(`/api/pets?type=${filterType}`)
+        .then(res => res.json())
+        .then(data => this.setState({pets: data}))
+    }
+  }
+
+// only mutated object is a new object, the rest is a copy of old objects
+  onAdoptPet = (id) => {
+    const pets = this.state.pets.map((obj) => {
+      if (obj.id === id) {
+        return {...obj, isAdopted: true} // -> {} creates a new obj
+      } else {
+        return obj
+      }
+    })
+    this.setState({
+      pets: pets
+    })
+  }
+
   render() {
     return (
       <div className="ui container">
@@ -24,10 +59,11 @@ class App extends React.Component {
         <div className="ui container">
           <div className="ui grid">
             <div className="four wide column">
-              <Filters />
+              <Filters onChangeType={this.onChangeType} onFindPetsClick={this.onFindPetsClick}/>
             </div>
             <div className="twelve wide column">
-              <PetBrowser />
+              <PetBrowser pets={this.state.pets}
+              onAdoptPet={this.onAdoptPet}/>
             </div>
           </div>
         </div>
